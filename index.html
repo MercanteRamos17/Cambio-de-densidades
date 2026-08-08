@@ -1,285 +1,434 @@
-import tkinter as tk
-import math
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador taller 1 estabilidad</title>
+    <style>
+        :root {
+            --bg-color: #0b1120;
+            --panel-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn-reset {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-reset:hover {
+            background: var(--accent);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            max-width: 1300px;
+            width: 100%;
+        }
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .panel h2 {
+            margin-top: 0;
+            color: var(--accent);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 0.90rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ittc {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.80rem;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        input {
+            width: 90px;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid var(--text-muted);
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-weight: bold;
+            text-align: right;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .result-card {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+        .result-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .canvas-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .canvas-box {
+            flex: 1;
+            min-width: 300px;
+            background: #020617;
+            border-radius: 8px;
+            border: 1px dashed var(--text-muted);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .canvas-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        canvas {
+            width: 100%;
+            height: 300px;
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
 
-class SimuladorEstabilidad(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        # Mantenemos el título original de la pestaña
-        self.title("Simulador taller 1 estabilidad")
-        self.configure(bg="#0b1120")
-        self.geometry("1100x800")
-        self.minsize(900, 700)
-        
-        # --- Variables con los valores por defecto intactos ---
-        self.var_eslora = tk.DoubleVar(value=33)
-        self.var_manga = tk.DoubleVar(value=7)
-        self.var_htri = tk.DoubleVar(value=3)
-        self.var_desp1 = tk.DoubleVar(value=1302.2625)
-        self.var_rho1 = tk.DoubleVar(value=1.025)
-        self.var_deltaT = tk.DoubleVar(value=0.3)
-        self.var_rho2 = tk.DoubleVar(value=1.000)
-        
-        self.out_Ax = tk.StringVar(value="0.00 m²")
-        self.out_Tsw = tk.StringVar(value="0.00 m")
-        self.out_Tfw = tk.StringVar(value="0.00 m")
-        self.out_w = tk.StringVar(value="0.00 t")
-        
-        self.crear_interfaz()
-        self.calcular()
-        
-        # Rastrear cambios en tiempo real (equivalente al 'input' event listener en JS)
-        variables = [self.var_eslora, self.var_manga, self.var_htri, 
-                     self.var_desp1, self.var_rho1, self.var_deltaT, self.var_rho2]
-        for var in variables:
-            var.trace_add("write", lambda *args: self.calcular())
+    <h1>Ejercicio 4 - Cambio de Densidades - Embarcación Prismática</h1>
+    <div class="subtitle">Docente - Carlos Velasquez Lombana - ENAP</div>
 
-    def resetear(self):
-        self.var_eslora.set(33)
-        self.var_manga.set(7)
-        self.var_htri.set(3)
-        self.var_desp1.set(1302.2625)
-        self.var_rho1.set(1.025)
-        self.var_deltaT.set(0.3)
-        self.var_rho2.set(1.000)
-        self.calcular()
+    <button class="btn-reset" onclick="resetearValores()">
+        <span>⟳</span> Restablecer Valores por Defecto
+    </button>
 
-    def crear_interfaz(self):
-        # --- Título y Encabezado intactos ---
-        tk.Label(self, text="EJERCICIO 4 - CAMBIO DE DENSIDADES - EMBARCACIÓN PRISMÁTICA", 
-                 bg="#0b1120", fg="#38bdf8", font=("Segoe UI", 16, "bold")).pack(pady=(20, 5))
-        
-        tk.Label(self, text="Docente - Carlos Velasquez Lombana - ENAP", 
-                 bg="#0b1120", fg="#94a3b8", font=("Segoe UI", 12)).pack(pady=(0, 20))
-        
-        # Botón de reset
-        btn_reset = tk.Button(self, text="⟳ Restablecer Valores por Defecto", bg="#1e293b", fg="#38bdf8",
-                              activebackground="#38bdf8", activeforeground="#0b1120", 
-                              relief="flat", font=("Segoe UI", 11, "bold"), command=self.resetear, cursor="hand2")
-        btn_reset.pack(pady=(0, 25))
-        
-        # Dashboard Principal
-        main_frame = tk.Frame(self, bg="#0b1120")
-        main_frame.pack(fill="both", expand=True, padx=40, pady=(0, 20))
-        
-        # --- PANEL IZQUIERDO (Controles) ---
-        panel_controls = tk.Frame(main_frame, bg="#1e293b", padx=20, pady=20, bd=1, relief="ridge")
-        panel_controls.pack(side="left", fill="y", padx=(0, 20))
-        
-        def crear_input(parent, label, unit, variable):
-            f = tk.Frame(parent, bg="#1e293b")
-            f.pack(fill="x", pady=6)
-            tk.Label(f, text=label, bg="#1e293b", fg="#f8fafc", font=("Segoe UI", 10, "bold")).pack(side="left")
-            tk.Label(f, text=unit, bg="#1e293b", fg="#f8fafc").pack(side="right")
-            tk.Entry(f, textvariable=variable, width=10, justify="right", font=("Segoe UI", 10, "bold"),
-                     bg="#0b1120", fg="#f8fafc", insertbackground="#38bdf8").pack(side="right", padx=5)
+    <div class="dashboard">
+        <!-- PANEL DE CONTROLES -->
+        <div class="panel" id="controls">
+            <h2>Parámetros Geométricos</h2>
+            <div class="input-group">
+                <label>Eslora <span class="ittc">L</span></label>
+                <div><input type="number" id="eslora" step="1"> m</div>
+            </div>
+            <div class="input-group">
+                <label>Manga <span class="ittc">B</span></label>
+                <div><input type="number" id="manga" step="0.5"> m</div>
+            </div>
+            <div class="input-group">
+                <label>Altura Triángulo <span class="ittc">h_tri</span></label>
+                <div><input type="number" id="h_tri" step="0.5"> m</div>
+            </div>
+            
+            <h2 style="margin-top: 20px;">Condición Inicial (Mar)</h2>
+            <div class="input-group">
+                <label>Desplazamiento 1 <span class="ittc">Δ₁</span></label>
+                <div><input type="number" id="desp1" step="10"> t</div>
+            </div>
+            <div class="input-group">
+                <label>Densidad Agua Mar <span class="ittc">ρ_SW</span></label>
+                <div><input type="number" id="rho1" step="0.001"> t/m³</div>
+            </div>
 
-        tk.Label(panel_controls, text="Parámetros Geométricos", bg="#1e293b", fg="#38bdf8", 
-                 font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(0, 10))
-        crear_input(panel_controls, "Eslora (L)", "m", self.var_eslora)
-        crear_input(panel_controls, "Manga (B)", "m", self.var_manga)
-        crear_input(panel_controls, "Altura Triángulo (h_tri)", "m", self.var_htri)
-        
-        tk.Label(panel_controls, text="Condición Inicial (Mar)", bg="#1e293b", fg="#38bdf8", 
-                 font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(20, 10))
-        crear_input(panel_controls, "Desplazamiento 1 (Δ₁)", "t", self.var_desp1)
-        crear_input(panel_controls, "Densidad Agua Mar (ρ_SW)", "t/m³", self.var_rho1)
-        
-        tk.Label(panel_controls, text="Condición Final (Dulce)", bg="#1e293b", fg="#38bdf8", 
-                 font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(20, 10))
-        crear_input(panel_controls, "Variación Calado (δT)", "m", self.var_deltaT)
-        crear_input(panel_controls, "Densidad Agua Dulce (ρ_FW)", "t/m³", self.var_rho2)
+            <h2 style="margin-top: 20px;">Condición Final (Dulce)</h2>
+            <div class="input-group">
+                <label>Variación Calado <span class="ittc">δT</span></label>
+                <div><input type="number" id="deltaT" step="0.1"> m</div>
+            </div>
+            <div class="input-group">
+                <label>Densidad Agua Dulce <span class="ittc">ρ_FW</span></label>
+                <div><input type="number" id="rho2" step="0.001"> t/m³</div>
+            </div>
+        </div>
 
-        # --- PANEL DERECHO (Resultados y Visores) ---
-        panel_der = tk.Frame(main_frame, bg="#0b1120")
-        panel_der.pack(side="left", fill="both", expand=True)
-        
-        # Tarjetas de Resultados
-        res_frame = tk.Frame(panel_der, bg="#1e293b", padx=20, pady=20, bd=1, relief="ridge")
-        res_frame.pack(fill="x", pady=(0, 20))
-        tk.Label(res_frame, text="Reporte de Estabilidad", bg="#1e293b", fg="#38bdf8", 
-                 font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(0, 15))
-        
-        cards_frame = tk.Frame(res_frame, bg="#1e293b")
-        cards_frame.pack(fill="x")
-        
-        def crear_card(parent, titulo, var, color, bg_color="#000000"):
-            f = tk.Frame(parent, bg=bg_color, padx=10, pady=10)
-            f.pack(side="left", expand=True, fill="both", padx=5)
-            tk.Label(f, text=titulo, bg=bg_color, fg="#94a3b8", font=("Segoe UI", 9)).pack(anchor="w")
-            tk.Label(f, textvariable=var, bg=bg_color, fg=color, font=("Segoe UI", 14, "bold")).pack(anchor="w", pady=(5,0))
-            # Simular el border-left de CSS
-            borde = tk.Frame(f, bg=color, width=4)
-            borde.place(relx=0, rely=0, relheight=1)
+        <!-- PANEL DE RESULTADOS Y VISORES -->
+        <div class="panel">
+            <h2>Reporte de Estabilidad</h2>
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-title">Área Max (<span class="ittc">A_X</span>)</div>
+                    <div class="result-value" id="out_Ax">0.00 m²</div>
+                </div>
+                <div class="result-card" style="border-left-color: #f59e0b;">
+                    <div class="result-title">Calado Mar (<span class="ittc">T_SW</span>)</div>
+                    <div class="result-value" id="out_Tsw" style="color: #f59e0b;">0.00 m</div>
+                </div>
+                <div class="result-card" style="border-left-color: #10b981;">
+                    <div class="result-title">Calado Dulce (<span class="ittc">T_FW</span>)</div>
+                    <div class="result-value" id="out_Tfw" style="color: #10b981;">0.00 m</div>
+                </div>
+                <div class="result-card" style="border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+                    <div class="result-title">Provisiones (<span class="ittc">w</span>)</div>
+                    <div class="result-value" id="out_w" style="color: #ef4444;">0.00 t</div>
+                </div>
+            </div>
 
-        # Mismos colores y estilos que tu CSS
-        crear_card(cards_frame, "Área Max (A_X)", self.out_Ax, "#f8fafc", "#171f2e")
-        crear_card(cards_frame, "Calado Mar (T_SW)", self.out_Tsw, "#f59e0b", "#171f2e")
-        crear_card(cards_frame, "Calado Dulce (T_FW)", self.out_Tfw, "#10b981", "#171f2e")
-        crear_card(cards_frame, "Provisiones (w)", self.out_w, "#ef4444", "#2c1c24") # Fondo rojizo simulado
-        
-        # Visores Gráficos (Canvas)
-        canv_frame = tk.Frame(panel_der, bg="#0b1120")
-        canv_frame.pack(fill="both", expand=True)
-        
-        # 2D
-        box2d = tk.Frame(canv_frame, bg="#020617", bd=1, relief="solid")
-        box2d.pack(side="left", fill="both", expand=True, padx=(0, 10))
-        tk.Label(box2d, text="VISTA TRANSVERSAL 2D", bg="#020617", fg="#38bdf8", font=("Segoe UI", 9, "bold")).pack(pady=10)
-        self.c2d = tk.Canvas(box2d, width=400, height=300, bg="#020617", highlightthickness=0)
-        self.c2d.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        # 3D
-        box3d = tk.Frame(canv_frame, bg="#020617", bd=1, relief="solid")
-        box3d.pack(side="right", fill="both", expand=True, padx=(10, 0))
-        tk.Label(box3d, text="VISTA LONGITUDINAL 3D", bg="#020617", fg="#38bdf8", font=("Segoe UI", 9, "bold")).pack(pady=10)
-        self.c3d = tk.Canvas(box3d, width=400, height=300, bg="#020617", highlightthickness=0)
-        self.c3d.pack(fill="both", expand=True, padx=10, pady=10)
+            <!-- CONTENEDOR DE VISORES -->
+            <div class="canvas-container">
+                <div class="canvas-box">
+                    <div class="canvas-label">Vista Transversal 2D</div>
+                    <canvas id="canvas2D" width="400" height="300"></canvas>
+                </div>
+                <div class="canvas-box">
+                    <div class="canvas-label">Vista Longitudinal 3D</div>
+                    <canvas id="canvas3D" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    def calcular(self):
-        try:
-            # Obtener valores
-            L = float(self.var_eslora.get() or 1)
-            B = float(self.var_manga.get() or 1)
-            h_tri = float(self.var_htri.get() or 1)
-            desp1 = float(self.var_desp1.get() or 0)
-            rho1 = float(self.var_rho1.get() or 1)
-            deltaT = float(self.var_deltaT.get() or 0)
-            rho2 = float(self.var_rho2.get() or 1)
-        except ValueError:
-            return # Evita errores si el usuario deja el campo vacío mientras escribe
+    <script>
+        const defaultValues = { eslora: 33, manga: 7, h_tri: 3, desp1: 1302.2625, rho1: 1.025, deltaT: 0.3, rho2: 1.000 };
+        const canvas2D = document.getElementById('canvas2D');
+        const ctx2D = canvas2D.getContext('2d');
+        const canvas3D = document.getElementById('canvas3D');
+        const ctx3D = canvas3D.getContext('2d');
+        const inputs = document.querySelectorAll('input');
 
-        # --- Lógica Matemática Intacta ---
-        V1 = desp1 / rho1
-        Ax1 = V1 / L
-        area_tri_max = (B * h_tri) / 2
-        
-        if Ax1 > area_tri_max:
-            T_sw = h_tri + ((Ax1 - area_tri_max) / B)
-        else:
-            T_sw = math.sqrt((2 * Ax1 * h_tri) / B)
-
-        T_fw = T_sw + deltaT
-        
-        if T_fw > h_tri:
-            Ax2 = area_tri_max + (B * (T_fw - h_tri))
-        else:
-            Ax2 = (math.pow(T_fw, 2) * B) / (2 * h_tri)
-
-        V2 = Ax2 * L
-        desp2 = V2 * rho2
-        w = desp2 - desp1
-
-        # Actualizar Reporte
-        self.out_Ax.set(f"{Ax1:.2f} m²")
-        self.out_Tsw.set(f"{T_sw:.2f} m")
-        self.out_Tfw.set(f"{T_fw:.2f} m")
-        self.out_w.set(f"{w:.4f} t")
-
-        max_H = max(T_sw, T_fw) + (h_tri * 0.5)
-        
-        # Redibujar Canvases
-        self.c2d.update() # Asegurar dimensiones actuales
-        self.c3d.update()
-        w_2d, h_2d = self.c2d.winfo_width(), self.c2d.winfo_height()
-        w_3d, h_3d = self.c3d.winfo_width(), self.c3d.winfo_height()
-        
-        if w_2d > 10:  # Validar que ya se renderizó la ventana
-            self.dibujar2D(B, h_tri, max_H, T_sw, T_fw, w_2d, h_2d)
-            self.dibujar3D(L, B, h_tri, max_H, T_sw, T_fw, w_3d, h_3d)
-
-    def dibujar_cota(self, ctx, x, y1, y2, texto, color, align_right=False):
-        ctx.create_line(x, y1, x, y2, fill=color, width=2)
-        ctx.create_line(x-5, y1, x+5, y1, fill=color, width=2)
-        ctx.create_line(x-5, y2, x+5, y2, fill=color, width=2)
-        anchor = "e" if align_right else "w"
-        tx = x - 10 if align_right else x + 10
-        ctx.create_text(tx, y2 + (y1 - y2) / 2, text=texto, fill=color, font=("Segoe UI", 10, "bold"), anchor=anchor)
-
-    def dibujar2D(self, B, h_tri, H_total, T1, T2, w, h):
-        self.c2d.delete("all")
-        scale = min(w / (B + 6), h / (H_total + 2))
-        cx, cy = w / 2, h - 30
-
-        # Malla (Grid)
-        for i in range(0, w, 20): self.c2d.create_line(i, 0, i, h, fill="#1e293b")
-        for i in range(0, h, 20): self.c2d.create_line(0, i, w, i, fill="#1e293b")
-
-        # Agua Dulce y Salada
-        self.c2d.create_rectangle(0, cy - (T2 * scale), w, cy, fill="#064e3b", outline="")
-        self.c2d.create_rectangle(0, cy - (T1 * scale), w, cy, fill="#0c4a6e", outline="")
-
-        # Casco
-        puntos = [
-            cx, cy,
-            cx + (B/2 * scale), cy - (h_tri * scale),
-            cx + (B/2 * scale), cy - (H_total * scale),
-            cx - (B/2 * scale), cy - (H_total * scale),
-            cx - (B/2 * scale), cy - (h_tri * scale)
-        ]
-        self.c2d.create_polygon(puntos, fill="#0f172a", outline="#f8fafc", width=3)
-
-        # Cotas
-        self.dibujar_cota(self.c2d, cx + (B/2 * scale) + 20, cy, cy - (T1 * scale), f"{T1:.2f}m (T_SW)", "#f59e0b")
-        self.dibujar_cota(self.c2d, cx - (B/2 * scale) - 20, cy, cy - (T2 * scale), f"{T2:.2f}m (T_FW)", "#10b981", True)
-
-    def dibujar3D(self, L, B, h_tri, H_total, T1, T2, w, h):
-        self.c3d.delete("all")
-        
-        anguloISO = 25 * math.pi / 180
-        reduccionZ = 0.4
-        
-        maxX = B + L * reduccionZ * math.cos(anguloISO)
-        maxY = H_total + L * reduccionZ * math.sin(anguloISO)
-        
-        scale = min((w - 100) / maxX, (h - 80) / maxY) if maxX > 0 and maxY > 0 else 1
-        
-        dx = w / 2 - (B * scale / 2) - (L * reduccionZ * math.cos(anguloISO) * scale / 2) + (B * scale / 2)
-        dy = h - 30
-
-        def proy(x, y, z):
-            return (dx + (x * scale) + (z * scale * reduccionZ * math.cos(anguloISO)),
-                    dy - (y * scale) - (z * scale * reduccionZ * math.sin(anguloISO)))
-
-        p = {
-            "f_k": proy(0, 0, 0), "f_p": proy(-B/2, h_tri, 0), "f_s": proy(B/2, h_tri, 0), "f_dp": proy(-B/2, H_total, 0), "f_ds": proy(B/2, H_total, 0),
-            "b_k": proy(0, 0, L), "b_p": proy(-B/2, h_tri, L), "b_s": proy(B/2, h_tri, L), "b_dp": proy(-B/2, H_total, L), "b_ds": proy(B/2, H_total, L)
+        function resetearValores() {
+            for (const [key, value] of Object.entries(defaultValues)) {
+                document.getElementById(key).value = value;
+            }
+            calcular();
         }
 
-        def trazar(pts, fill, outline, width=1):
-            flat_pts = []
-            for pt in pts:
-                flat_pts.extend(pt)
-            self.c3d.create_polygon(flat_pts, fill=fill, outline=outline, width=width)
-
-        # Espejo (Popa)
-        trazar([p["b_k"], p["b_s"], p["b_ds"], p["b_dp"], p["b_p"]], "#1e293b", "#94a3b8")
-        
-        # Planos de flotación
-        def trazar_agua(T, color):
-            mangaEnT = (T * B) / h_tri if T <= h_tri else B
-            trazar([proy(-mangaEnT/2, T, 0), proy(mangaEnT/2, T, 0), proy(mangaEnT/2, T, L), proy(-mangaEnT/2, T, L)], color, "#cbd5e1")
+        // Función de utilidad para dibujar cotas en 2D
+        function dibujarLineaCota(ctx, x, y1, y2, texto, color, alignRight = false) {
+            ctx.strokeStyle = color;
+            ctx.fillStyle = color;
+            ctx.lineWidth = 2;
             
-        trazar_agua(T1, "#0c4a6e") # Mar
-        if T2 > T1:
-            trazar_agua(T2, "#064e3b") # Dulce
+            ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke(); // Línea vertical
+            ctx.beginPath(); ctx.moveTo(x - 5, y1); ctx.lineTo(x + 5, y1); ctx.stroke(); // Tope superior
+            ctx.beginPath(); ctx.moveTo(x - 5, y2); ctx.lineTo(x + 5, y2); ctx.stroke(); // Tope inferior
+
+            ctx.font = "bold 13px 'Segoe UI'";
+            ctx.textAlign = alignRight ? "right" : "left";
+            ctx.fillText(texto, alignRight ? x - 10 : x + 10, y2 + ((y1 - y2) / 2) + 4);
+        }
+
+        function calcular() {
+            const L = parseFloat(document.getElementById('eslora').value) || 1;
+            const B = parseFloat(document.getElementById('manga').value) || 1;
+            const h_tri = parseFloat(document.getElementById('h_tri').value) || 1;
+            const desp1 = parseFloat(document.getElementById('desp1').value) || 0;
+            const rho1 = parseFloat(document.getElementById('rho1').value) || 1;
+            const deltaT = parseFloat(document.getElementById('deltaT').value) || 0;
+            const rho2 = parseFloat(document.getElementById('rho2').value) || 1;
+
+            const V1 = desp1 / rho1;
+            const Ax1 = V1 / L;
+            const area_tri_max = (B * h_tri) / 2;
             
-        # Aristas longitudinales
-        self.c3d.create_line(*p["f_k"], *p["b_k"], fill="#f8fafc", width=2)
-        self.c3d.create_line(*p["f_p"], *p["b_p"], fill="#f8fafc", width=2)
-        self.c3d.create_line(*p["f_s"], *p["b_s"], fill="#f8fafc", width=2)
-        self.c3d.create_line(*p["f_dp"], *p["b_dp"], fill="#f8fafc", width=2)
-        self.c3d.create_line(*p["f_ds"], *p["b_ds"], fill="#f8fafc", width=2)
+            let T_sw = Ax1 > area_tri_max 
+                ? h_tri + ((Ax1 - area_tri_max) / B) 
+                : Math.sqrt((2 * Ax1 * h_tri) / B);
 
-        # Cara Frontal (Proa)
-        trazar([p["f_k"], p["f_s"], p["f_ds"], p["f_dp"], p["f_p"]], "#0f172a", "#f8fafc", 2)
+            const T_fw = T_sw + deltaT;
+            
+            let Ax2 = T_fw > h_tri 
+                ? area_tri_max + (B * (T_fw - h_tri)) 
+                : (Math.pow(T_fw, 2) * B) / (2 * h_tri);
 
-        # Textos 3D
-        p1 = proy(B/2, T1, 0)
-        self.c3d.create_text(p1[0]+8, p1[1]+5, text=f"◀ T_SW: {T1:.2f}m", fill="#f59e0b", font=("Segoe UI", 10, "bold"), anchor="w")
-        
-        p2 = proy(-B/2, T2, 0)
-        self.c3d.create_text(p2[0]-8, p2[1]+5, text=f"{T2:.2f}m :T_FW ▶", fill="#10b981", font=("Segoe UI", 10, "bold"), anchor="e")
+            const V2 = Ax2 * L;
+            const desp2 = V2 * rho2;
+            const w = desp2 - desp1;
 
-if __name__ == "__main__":
-    app = SimuladorEstabilidad()
-    app.mainloop()
+            document.getElementById('out_Ax').innerText = Ax1.toFixed(2) + " m²";
+            document.getElementById('out_Tsw').innerText = T_sw.toFixed(2) + " m";
+            document.getElementById('out_Tfw').innerText = T_fw.toFixed(2) + " m";
+            document.getElementById('out_w').innerText = w.toFixed(4) + " t";
+
+            const max_H = Math.max(T_sw, T_fw) + (h_tri * 0.5); 
+            
+            dibujar2D(B, h_tri, max_H, T_sw, T_fw);
+            dibujar3D(L, B, h_tri, max_H, T_sw, T_fw);
+        }
+
+        function dibujar2D(B, h_tri, H_total, T1, T2) {
+            ctx2D.clearRect(0, 0, canvas2D.width, canvas2D.height);
+            const scale = Math.min(canvas2D.width / (B + 6), canvas2D.height / (H_total + 2));
+            const cx = canvas2D.width / 2;
+            const cy = canvas2D.height - 30;
+
+            ctx2D.strokeStyle = "rgba(255,255,255,0.05)";
+            for(let i=0; i<canvas2D.width; i+=20) { ctx2D.beginPath(); ctx2D.moveTo(i,0); ctx2D.lineTo(i,canvas2D.height); ctx2D.stroke(); }
+            for(let i=0; i<canvas2D.height; i+=20) { ctx2D.beginPath(); ctx2D.moveTo(0,i); ctx2D.lineTo(canvas2D.width,i); ctx2D.stroke(); }
+
+            // Agua
+            ctx2D.fillStyle = "rgba(16, 185, 129, 0.2)";
+            ctx2D.fillRect(0, cy - (T2 * scale), canvas2D.width, T2 * scale);
+            ctx2D.fillStyle = "rgba(14, 165, 233, 0.4)";
+            ctx2D.fillRect(0, cy - (T1 * scale), canvas2D.width, T1 * scale);
+
+            // Casco
+            ctx2D.beginPath();
+            ctx2D.moveTo(cx, cy); 
+            ctx2D.lineTo(cx + (B/2 * scale), cy - (h_tri * scale)); 
+            ctx2D.lineTo(cx + (B/2 * scale), cy - (H_total * scale)); 
+            ctx2D.lineTo(cx - (B/2 * scale), cy - (H_total * scale)); 
+            ctx2D.lineTo(cx - (B/2 * scale), cy - (h_tri * scale)); 
+            ctx2D.closePath();
+
+            ctx2D.lineWidth = 4;
+            ctx2D.strokeStyle = "#f8fafc";
+            ctx2D.stroke();
+            ctx2D.fillStyle = "rgba(0,0,0,0.6)";
+            ctx2D.fill();
+
+            // Dibujar cotas laterales 2D
+            dibujarLineaCota(ctx2D, cx + (B/2 * scale) + 20, cy, cy - (T1 * scale), T1.toFixed(2) + "m (T_SW)", "#f59e0b");
+            dibujarLineaCota(ctx2D, cx - (B/2 * scale) - 20, cy, cy - (T2 * scale), T2.toFixed(2) + "m (T_FW)", "#10b981", true);
+        }
+
+        function dibujar3D(L, B, h_tri, H_total, T1, T2) {
+            ctx3D.clearRect(0, 0, canvas3D.width, canvas3D.height);
+            
+            const anguloISO = 25 * Math.PI / 180; 
+            const reduccionZ = 0.4; 
+            
+            const maxX = B + L * reduccionZ * Math.cos(anguloISO);
+            const maxY = H_total + L * reduccionZ * Math.sin(anguloISO);
+            const scale = Math.min((canvas3D.width - 100) / maxX, (canvas3D.height - 80) / maxY);
+            
+            const dx = canvas3D.width / 2 - (B * scale / 2) - (L * reduccionZ * Math.cos(anguloISO) * scale / 2) + (B * scale / 2);
+            const dy = canvas3D.height - 30;
+
+            function proy(x, y, z) {
+                return {
+                    x: dx + (x * scale) + (z * scale * reduccionZ * Math.cos(anguloISO)),
+                    y: dy - (y * scale) - (z * scale * reduccionZ * Math.sin(anguloISO))
+                };
+            }
+
+            const p = {
+                f_k: proy(0, 0, 0), f_p: proy(-B/2, h_tri, 0), f_s: proy(B/2, h_tri, 0), f_dp: proy(-B/2, H_total, 0), f_ds: proy(B/2, H_total, 0),
+                b_k: proy(0, 0, L), b_p: proy(-B/2, h_tri, L), b_s: proy(B/2, h_tri, L), b_dp: proy(-B/2, H_total, L), b_ds: proy(B/2, H_total, L)
+            };
+
+            function trazarCara(puntos, relleno, borde, grosor = 1) {
+                ctx3D.beginPath(); ctx3D.moveTo(puntos[0].x, puntos[0].y);
+                for(let i=1; i<puntos.length; i++) ctx3D.lineTo(puntos[i].x, puntos[i].y);
+                ctx3D.closePath();
+                if(relleno) { ctx3D.fillStyle = relleno; ctx3D.fill(); }
+                if(borde) { ctx3D.strokeStyle = borde; ctx3D.lineWidth = grosor; ctx3D.stroke(); }
+            }
+
+            // Espejo
+            trazarCara([p.b_k, p.b_s, p.b_ds, p.b_dp, p.b_p], "rgba(255,255,255,0.05)", "rgba(248, 250, 252, 0.4)", 1);
+            
+            // Plano de flotación
+            function trazarAgua(T, color) {
+                let mangaEnT = T <= h_tri ? (T * B) / h_tri : B;
+                trazarCara([proy(-mangaEnT/2, T, 0), proy(mangaEnT/2, T, 0), proy(mangaEnT/2, T, L), proy(-mangaEnT/2, T, L)], color, "rgba(255,255,255,0.3)", 1);
+            }
+            
+            trazarAgua(T1, "rgba(14, 165, 233, 0.6)"); // Mar
+            if(T2 > T1) trazarAgua(T2, "rgba(16, 185, 129, 0.4)"); // Dulce extra
+            
+            // Aristas longitudinales
+            trazarCara([p.f_k, p.b_k], null, "#f8fafc", 2); 
+            trazarCara([p.f_p, p.b_p], null, "#f8fafc", 2); 
+            trazarCara([p.f_s, p.b_s], null, "#f8fafc", 2); 
+            trazarCara([p.f_dp, p.b_dp], null, "#f8fafc", 2); 
+            trazarCara([p.f_ds, p.b_ds], null, "#f8fafc", 2); 
+
+            // Cara frontal (Proa)
+            trazarCara([p.f_k, p.f_s, p.f_ds, p.f_dp, p.f_p], "rgba(15, 23, 42, 0.8)", "#f8fafc", 3);
+
+            // Cotas de altura 3D (Textos directos en la proa)
+            const pProaAguaMar = proy(B/2, T1, 0);
+            ctx3D.fillStyle = "#f59e0b";
+            ctx3D.font = "bold 13px 'Segoe UI'";
+            ctx3D.textAlign = "left";
+            ctx3D.fillText("◀ T_SW: " + T1.toFixed(2) + "m", pProaAguaMar.x + 8, pProaAguaMar.y + 5);
+            
+            const pProaAguaDulce = proy(-B/2, T2, 0);
+            ctx3D.fillStyle = "#10b981";
+            ctx3D.textAlign = "right";
+            ctx3D.fillText(T2.toFixed(2) + "m :T_FW ▶", pProaAguaDulce.x - 8, pProaAguaDulce.y + 5);
+        }
+
+        inputs.forEach(input => input.addEventListener('input', calcular));
+        window.onload = resetearValores;
+
+    </script>
+</body>
+</html>
